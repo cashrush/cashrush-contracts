@@ -102,18 +102,6 @@ contract CashRushNft is
         return tokenIds;
     }
 
-    // Royalty
-    function setDefaultRoyalty(address royaltyReceiver, uint96 royaltyNumerator)
-        external
-        onlyOwner
-    {
-        _setDefaultRoyalty(royaltyReceiver, royaltyNumerator);
-    }
-
-    function deleteDefaultRoyalty() external onlyOwner {
-        _deleteDefaultRoyalty();
-    }
-
     // Metadata
     function reveal() external onlyOwner {
         _revealed = true;
@@ -156,6 +144,18 @@ contract CashRushNft is
 
     function setBaseExtension(string memory fileExtension) external onlyOwner {
         _baseExtension = fileExtension;
+    }
+
+    // Royalty
+    function setDefaultRoyalty(address royaltyReceiver, uint96 royaltyNumerator)
+        external
+        onlyOwner
+    {
+        _setDefaultRoyalty(royaltyReceiver, royaltyNumerator);
+    }
+
+    function deleteDefaultRoyalty() external onlyOwner {
+        _deleteDefaultRoyalty();
     }
 
     // Override
