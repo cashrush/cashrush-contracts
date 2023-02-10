@@ -98,6 +98,7 @@ contract CashRushNft is
         return tokenIds;
     }
 
+    // Royalty
     function setDefaultRoyalty(address royaltyReceiver, uint96 royaltyNumerator)
         external
         onlyOwner
