@@ -34,7 +34,7 @@ contract CashRushNft is
     // CashRush
     mapping(uint256 => bool) public isStaked;
 
-    constructor() ERC721(_name, _symbol) EIP712(_name, "1") {
+    constructor() public ERC721(_name, _symbol) EIP712(_name, "1") {
         _tokenIdCounter.increment(); // set to 1
     }
 
