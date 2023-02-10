@@ -2,9 +2,9 @@
   "name": "@cashrush/contracts",
   "version": "1.0.0",
   "private": true,
-  "description": "CASHRUSH Smart Contracts",
+  "description": "CashRush Smart Contracts",
   "author": {
-    "name": "CASHRUSH",
+    "name": "CashRush",
     "email": "support@cashrush.gg",
     "url": "https://cashrush.gg"
   },
