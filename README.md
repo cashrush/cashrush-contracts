@@ -1,2 +1,1 @@
-# cashrush-contracts
-CASHRUSH Smart Contracts
+# CashRush Smart Contracts
