@@ -31,11 +31,36 @@ contract CashRushNft is
     bool private _revealed = false;
     string private _notRevealedURI = "";
 
+    // CashRush
+    mapping(uint256 => bool) public isStaked;
+
     constructor() ERC721(_name, _symbol) EIP712(_name, "1") {
         _tokenIdCounter.increment(); // set to 1
     }
 
     // CashRush
+    function stake(uint256[] memory tokenIds) external {
+        _stake(tokenIds, true);
+    }
+
+    function unstake(uint256[] memory tokenIds) external {
+        _stake(tokenIds, false);
+    }
+
+    function _stake(uint256[] memory tokenIds, bool state) private {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            for (uint256 j = i + 1; j < tokenIds.length; j++) {
+                require(tokenIds[i] != tokenIds[j], "Duplicate tokenId");
+            }
+            require(ownerOf(tokenIds[i]) == _msgSender(), "Not token owner");
+            isStaked[tokenIds[i]] = state;
+        }
+    }
+
+    modifier whenNotStaked(uint256 tokenId) {
+        require(!isStaked[tokenId], "Token is staked");
+        _;
+    }
 
     // Mint
     function safeMint(address to, uint256 tokenCount) external onlyOwner {
@@ -116,7 +141,7 @@ contract CashRushNft is
         address to,
         uint256 tokenId,
         uint256 batchSize
-    ) internal override(ERC721, ERC721Enumerable) {
+    ) internal override(ERC721, ERC721Enumerable) whenNotStaked(tokenId) {
         super._beforeTokenTransfer(from, to, tokenId, batchSize);
     }
 
