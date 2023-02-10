@@ -25,7 +25,8 @@
   ],
   "dependencies": {
     "@openzeppelin/contracts": "^4.8.1",
-    "erc721a": "^4.2.3"
+    "erc721a": "^4.2.3",
+    "operator-filter-registry": "^1.4.0"
   },
   "devDependencies": {
     "@truffle/hdwallet-provider": "^2.1.6",

@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/token/common/ERC2981.sol";
 import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/draft-ERC721Votes.sol";
+import "operator-filter-registry/src/DefaultOperatorFilterer.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
@@ -17,6 +18,7 @@ contract CashRushNft is
     ERC2981,
     EIP712,
     ERC721Votes,
+    DefaultOperatorFilterer,
     Ownable
 {
     using Counters for Counters.Counter;
@@ -173,10 +175,51 @@ contract CashRushNft is
         super._afterTokenTransfer(from, to, tokenId, batchSize);
     }
 
+    function setApprovalForAll(address operator, bool approved)
+        public
+        override
+        onlyAllowedOperatorApproval(operator)
+    {
+        super.setApprovalForAll(operator, approved);
+    }
+
+    function approve(address operator, uint256 tokenId)
+        public
+        override
+        onlyAllowedOperatorApproval(operator)
+    {
+        super.approve(operator, tokenId);
+    }
+
+    function transferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public override onlyAllowedOperator(from) {
+        super.transferFrom(from, to, tokenId);
+    }
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public override onlyAllowedOperator(from) {
+        super.safeTransferFrom(from, to, tokenId);
+    }
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory data
+    ) public override onlyAllowedOperator(from) {
+        super.safeTransferFrom(from, to, tokenId, data);
+    }
+
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721, ERC721Enumerable)
+        override(ERC721, ERC721Enumerable, ERC2981)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
