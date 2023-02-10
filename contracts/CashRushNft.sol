@@ -25,13 +25,11 @@ contract CashRushNft is
     // Metadata
     string private _name = "CashRush";
     string private _symbol = "CASHRUSH";
-    string private _contractURI =
-        "https://ipfs.cashrush.gg/ipfs/?/contract.json";
-    string private _baseURL = "https://ipfs.cashrush.gg/ipfs/?/";
-    string private _baseExtension = ".json";
-    bool private _revealed = true;
-    string private _notRevealedURI =
-        "https://ipfs.cashrush.gg/ipfs/?/notrevealed.json";
+    string private _contractURI = "";
+    string private _baseURL = "";
+    string private _baseExtension = "";
+    bool private _revealed = false;
+    string private _notRevealedURI = "";
 
     constructor() ERC721(_name, _symbol) EIP712(_name, "1") {
         _tokenIdCounter.increment(); // set to 1
