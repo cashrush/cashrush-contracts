@@ -4,18 +4,20 @@ pragma solidity 0.8.17;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/common/ERC2981.sol";
 import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/draft-ERC721Votes.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract CashRushNft is
     ERC721,
     ERC721Enumerable,
     ERC721Burnable,
-    Ownable,
+    ERC2981,
     EIP712,
-    ERC721Votes
+    ERC721Votes,
+    Ownable
 {
     using Counters for Counters.Counter;
 
@@ -34,8 +36,13 @@ contract CashRushNft is
     // CashRush
     mapping(uint256 => bool) public isStaked;
 
-    constructor() public ERC721(_name, _symbol) EIP712(_name, "1") {
-        _tokenIdCounter.increment(); // set to 1
+    constructor(address royaltyReceiver, uint96 royaltyNumerator)
+        public
+        ERC721(_name, _symbol)
+        EIP712(_name, "1")
+    {
+        _tokenIdCounter.increment();
+        _setDefaultRoyalty(royaltyReceiver, royaltyNumerator);
     }
 
     // CashRush
@@ -89,6 +96,17 @@ contract CashRushNft is
             tokenIds[i] = tokenOfOwnerByIndex(owner, i);
         }
         return tokenIds;
+    }
+
+    function setDefaultRoyalty(address royaltyReceiver, uint96 royaltyNumerator)
+        external
+        onlyOwner
+    {
+        _setDefaultRoyalty(royaltyReceiver, royaltyNumerator);
+    }
+
+    function deleteDefaultRoyalty() external onlyOwner {
+        _deleteDefaultRoyalty();
     }
 
     // Metadata
