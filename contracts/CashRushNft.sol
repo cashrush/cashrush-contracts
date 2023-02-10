@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/draft-ERC721Votes.sol";
 import "operator-filter-registry/src/DefaultOperatorFilterer.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract CashRushNft is
@@ -21,6 +22,7 @@ contract CashRushNft is
     DefaultOperatorFilterer,
     Ownable
 {
+    using Strings for uint256;
     using Counters for Counters.Counter;
 
     uint256 private constant MAX_SUPPLY = 5000;
@@ -130,7 +132,7 @@ contract CashRushNft is
     }
 
     function tokenURI(uint256 tokenId)
-        external
+        public
         view
         override
         returns (string memory)
@@ -177,7 +179,7 @@ contract CashRushNft is
 
     function setApprovalForAll(address operator, bool approved)
         public
-        override
+        override(ERC721, IERC721)
         onlyAllowedOperatorApproval(operator)
     {
         super.setApprovalForAll(operator, approved);
@@ -185,7 +187,7 @@ contract CashRushNft is
 
     function approve(address operator, uint256 tokenId)
         public
-        override
+        override(ERC721, IERC721)
         onlyAllowedOperatorApproval(operator)
     {
         super.approve(operator, tokenId);
@@ -195,7 +197,7 @@ contract CashRushNft is
         address from,
         address to,
         uint256 tokenId
-    ) public override onlyAllowedOperator(from) {
+    ) public override(ERC721, IERC721) onlyAllowedOperator(from) {
         super.transferFrom(from, to, tokenId);
     }
 
@@ -203,7 +205,7 @@ contract CashRushNft is
         address from,
         address to,
         uint256 tokenId
-    ) public override onlyAllowedOperator(from) {
+    ) public override(ERC721, IERC721) onlyAllowedOperator(from) {
         super.safeTransferFrom(from, to, tokenId);
     }
 
@@ -212,7 +214,7 @@ contract CashRushNft is
         address to,
         uint256 tokenId,
         bytes memory data
-    ) public override onlyAllowedOperator(from) {
+    ) public override(ERC721, IERC721) onlyAllowedOperator(from) {
         super.safeTransferFrom(from, to, tokenId, data);
     }
 
