@@ -38,14 +38,24 @@ contract CashRushNft is
     string private _notRevealedURI = "";
 
     // CashRush
+    address public immutable game;
+    address payable public devWallet;
     mapping(uint256 => bool) public isStaked;
 
-    constructor(address royaltyReceiver, uint96 royaltyNumerator)
-        public
-        ERC721(_name, _symbol)
-        EIP712(_name, "1")
-    {
+    uint256 public totalRewards;
+    mapping(uint256 => uint256) public rewards;
+
+    event Received(address indexed account, uint256 value);
+
+    constructor(
+        address _game,
+        address _devWallet,
+        address royaltyReceiver,
+        uint96 royaltyNumerator
+    ) public ERC721(_name, _symbol) EIP712(_name, "1") {
         _tokenIdCounter.increment();
+        game = _game;
+        devWallet = payable(_devWallet);
         _setDefaultRoyalty(royaltyReceiver, royaltyNumerator);
     }
 
@@ -73,14 +83,69 @@ contract CashRushNft is
         _;
     }
 
+    // Получение дохода от игры
+    function accumulated(uint256[] memory tokenIds)
+        external
+        view
+        returns (uint256)
+    {
+        uint256 share = (totalRewards + address(this).balance) / totalSupply();
+        uint256 total = 0;
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            uint256 tokenId = tokenIds[i];
+            for (uint256 j = i + 1; j < tokenIds.length; j++) {
+                require(tokenId != tokenIds[j], "Duplicate tokenId");
+            }
+            require(ownerOf(tokenId) == _msgSender(), "Not token owner");
+            uint256 rewards = rewards[tokenId];
+            if (rewards < share) {
+                uint256 toPay = share - rewards;
+                total += toPay;
+            }
+        }
+        return total;
+    }
+
+    function claim(uint256[] memory tokenIds) external {
+        uint256 share = (totalRewards + address(this).balance) / totalSupply();
+        uint256 total = 0;
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            uint256 tokenId = tokenIds[i];
+            for (uint256 j = i + 1; j < tokenIds.length; j++) {
+                require(tokenId != tokenIds[j], "Duplicate tokenId");
+            }
+            require(ownerOf(tokenId) == _msgSender(), "Not token owner");
+            uint256 rewards = rewards[tokenId];
+            if (rewards < share) {
+                uint256 toPay = share - rewards;
+                rewards[tokenId] += toPay;
+                total += toPay;
+            }
+        }
+        if (total > 0) {
+            address payable recipient = payable(_msgSender());
+            recipient.transfer(total);
+        }
+    }
+
+    receive() external payable {
+        emit Received(msg.sender, msg.value);
+    }
+
     // Mint
-    function safeMint(address to, uint256 tokenCount) external onlyOwner {
+    function safeMint(address to, uint256 tokenCount)
+        external
+        payable
+        onlyOwner
+    {
         require((totalSupply() + tokenCount) <= MAX_SUPPLY, "MAX_SUPPLY");
         for (uint256 i = 0; i < tokenCount; i++) {
             uint256 tokenId = _tokenIdCounter.current();
             _tokenIdCounter.increment();
             _safeMint(to, tokenId);
         }
+        //  TODO сразу отправляем средства
+        devWallet.transfer(msg.value);
     }
 
     // Extra
@@ -175,6 +240,7 @@ contract CashRushNft is
         uint256 batchSize
     ) internal override(ERC721, ERC721Votes) {
         super._afterTokenTransfer(from, to, tokenId, batchSize);
+        // TODO тут можно обновлять в игре статус - но  может дорого стоить покупка/продажа на маркетплейсе
     }
 
     function setApprovalForAll(address operator, bool approved)
