@@ -37,11 +37,17 @@ contract CashRushProtectionPool {
         }
     }
 
-    function deposit(address account) external payable onlyDepositors {
+    function deposit(address account)
+        external
+        payable
+        onlyDepositors
+        returns (bool)
+    {
         lastDeposit = block.timestamp;
         uint256 id = nextId++;
         accounts[id] = account;
         emit Deposited(account, id, msg.value);
+        return true;
     }
 
     receive() external payable {
