@@ -9,15 +9,16 @@
     "url": "https://cashrush.gg"
   },
   "scripts": {
-    "clean": "rimraf ./build/ && mkdirp ./build/",
+    "clean": "rimraf ./build/ && mkdirp ./build/ && rimraf ./flatten/ && mkdirp ./flatten",
     "precompile": "yarn clean",
     "compile": "truffle compile",
+    "postcompile": "yarn run flatten",
     "predeploy": "yarn run compile",
     "deploy": "truffle migrations --network",
     "test": "truffle test",
     "verify": "truffle run verify --network",
-    "ganache-cli": "node ./scripts/ganache-cli.js",
-    "concat": "waffle flatten"
+    "ganache": "node ./scripts/ganache-cli.js",
+    "flatten": "waffle flatten"
   },
   "files": [
     "contracts",
