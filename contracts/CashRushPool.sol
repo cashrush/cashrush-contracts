@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-contract CashRushProtectionPool {
+contract CashRushPool {
     uint256 public constant DELAY = 5 days;
     uint256 public constant SHARES = 50;
     uint256 public lastDeposit = 0;
