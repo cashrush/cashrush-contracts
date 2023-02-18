@@ -25,15 +25,14 @@ contract CashRushPool {
     }
 
     function distribute() external {
-        if (block.timestamp >= (lastDeposit + DELAY)) {
-            uint256 shares = _min(SHARES, nextId);
-            uint256 value = address(this).balance / shares;
-            for (uint256 i = 1; i <= shares; i++) {
-                uint256 id = nextId - i;
-                address payable recipient = payable(accounts[id]);
-                recipient.transfer(value);
-                emit Distributed(recipient, id, value);
-            }
+        require(block.timestamp >= (lastDeposit + DELAY), "Too early");
+        uint256 shares = _min(SHARES, nextId);
+        uint256 value = address(this).balance / shares;
+        for (uint256 i = 1; i <= shares; i++) {
+            uint256 id = nextId - i;
+            address payable recipient = payable(accounts[id]);
+            recipient.transfer(value);
+            emit Distributed(recipient, id, value);
         }
     }
 
