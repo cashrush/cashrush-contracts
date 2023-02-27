@@ -44,7 +44,7 @@ contract CashRushNftDataStore is Ownable {
         //}
     }
 
-    function tokensMaxRate(uint256[] tokenIds)
+    function tokensMaxRate(uint256[] memory tokenIds)
         public
         view
         returns (uint256 maxRate)
