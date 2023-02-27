@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "./CashRushNftDataStore.sol";
 
 abstract contract CashRushNftStaking is
@@ -31,7 +32,7 @@ abstract contract CashRushNftStaking is
             for (uint256 j = i + 1; j < tokenIds.length; j++) {
                 require(tokenId != tokenIds[j], "Duplicate tokenId");
             }
-            require(ownerOf(tokenId) == _msgSender(), "Not token owner");
+            require(ownerOf(tokenId) == msg.sender, "Not token owner");
             if (isStaked[tokenId] != state) {
                 if (state) emit Staked(tokenId);
                 else emit Unstaked(tokenId);
@@ -39,8 +40,8 @@ abstract contract CashRushNftStaking is
             isStaked[tokenId] = state;
         }
 
-        extraRate[_msgSender()] = accountRate(_msgSender());
-        emit ExtraRateSetted(_msgSender(), extraRate[_msgSender()]);
+        extraRate[msg.sender] = accountRate(msg.sender);
+        emit ExtraRateSetted(msg.sender, extraRate[msg.sender]);
     }
 
     function accountRate(address account) public view returns (uint256) {
