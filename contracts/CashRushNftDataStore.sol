@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-
-contract CashRushNftDataStore is Ownable {
+abstract contract CashRushNftDataStore {
     uint8 private constant TOTAL_CARDS = 13;
 
     bool public dataIsFrozen = false;
@@ -12,7 +10,7 @@ contract CashRushNftDataStore is Ownable {
     event DataFrozen(bool isFrozen);
     event TypeUpdated(uint256 indexed tokenId, uint8 prevValue, uint8 newValue);
 
-    function uploadTypes(uint256 shift, bytes memory types) external onlyOwner {
+    function _uploadTypes(uint256 shift, bytes memory types) internal {
         require(!dataIsFrozen, "Data is frozen");
         for (uint256 i = 0; i < types.length; i++) {
             uint256 tokenId = shift + i;
@@ -22,7 +20,7 @@ contract CashRushNftDataStore is Ownable {
         }
     }
 
-    function freezeData() external onlyOwner {
+    function _freezeData() internal {
         emit DataFrozen(true);
         dataIsFrozen = true;
     }
