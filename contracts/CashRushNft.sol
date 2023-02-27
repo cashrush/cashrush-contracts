@@ -293,7 +293,6 @@ contract CashRushNft is
         }
     }
 
-    // TODO переключатель очередности минтов
     // TODO limit?
     function publicMint(uint256 tokenCount) external payable {
         require(isActivePublicMint, "Mint not active");
