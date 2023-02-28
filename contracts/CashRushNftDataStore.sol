@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 abstract contract CashRushNftDataStore {
-    uint8 private constant TOTAL_CARDS = 13;
+    uint8 private constant TOTAL_CARDS = 14;
 
     bool public dataIsFrozen = false;
     mapping(uint256 => uint8) public tokenType;
@@ -86,7 +86,8 @@ abstract contract CashRushNftDataStore {
             set[10] &&
             set[11] &&
             set[12] &&
-            set[13]
+            set[13] &&
+            set[14]
         ) {
             return 100; // Fully-Stacked Deck - 1.00%
         }
@@ -104,7 +105,8 @@ abstract contract CashRushNftDataStore {
             set[10] &&
             set[11] &&
             set[12] &&
-            set[13]
+            set[13] &&
+            set[14]
         ) {
             return _max(15, tokenMaxRate); // Set of Common NFTs - 0.15%
         }
