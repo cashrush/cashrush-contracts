@@ -35,7 +35,8 @@ contract CashRushNft is
     using Counters for Counters.Counter;
 
     uint256 private constant DAY = 86_400;
-    uint256 private constant MAX_SUPPLY = 5000;
+    uint256 private constant MAX_SUPPLY = 4000;
+    uint256 private constant FREE_MINT = 200;
     uint256 private totalMinted = 0;
     Counters.Counter private _tokenIdCounter;
 
@@ -255,14 +256,16 @@ contract CashRushNft is
         isActivePublicMint = status;
     }
 
-    // TODO tokenCount? limit
     function freeMint(
         address account,
         uint256 tokenCount,
         bytes32[] calldata merkleProof
     ) external {
-        require(isActiveFreeMint, "Mint not active");
-        require((minted1[account] + tokenCount) < 1, "Mint limit"); // TODO limit
+        require(
+            isActiveFreeMint && totalSupply() <= FREE_MINT,
+            "Mint not active"
+        );
+        require((minted1[account] + tokenCount) <= 1, "Mint limit");
         require((totalSupply() + tokenCount) <= MAX_SUPPLY, "MAX_SUPPLY");
         require(
             _verify1(_leaf(account, tokenCount), merkleProof),
@@ -277,14 +280,13 @@ contract CashRushNft is
         }
     }
 
-    // TODO tokenCount? limit
     function whitelistMint(
         address account,
         uint256 tokenCount,
         bytes32[] calldata merkleProof
     ) external payable {
         require(isActiveWhitelistMint, "Mint not active");
-        require((minted2[account] + tokenCount) < 3, "Mint limit"); // TODO limit
+        require((minted2[account] + tokenCount) <= 5, "Mint limit");
         require(
             _verify2(_leaf(account, tokenCount), merkleProof),
             "MerkleDistributor: Invalid  merkle proof"
