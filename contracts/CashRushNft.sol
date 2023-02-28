@@ -36,6 +36,7 @@ contract CashRushNft is
 
     uint256 private constant DAY = 86_400;
     uint256 private constant MAX_SUPPLY = 5000;
+    uint256 private totalMinted = 0;
     Counters.Counter private _tokenIdCounter;
 
     // Metadata
@@ -152,10 +153,14 @@ contract CashRushNft is
         view
         returns (uint256)
     {
-        uint256 share = (totalRewards + address(this).balance) / MAX_SUPPLY;
+        uint256 share = (totalRewards + address(this).balance) / totalMinted;
         uint256 total = 0;
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
+            require(
+                tokenId >= 1 && tokenId <= totalMinted,
+                "Index out of bounds"
+            );
             for (uint256 j = i + 1; j < tokenIds.length; j++) {
                 require(tokenId != tokenIds[j], "Duplicate tokenId");
             }
@@ -169,7 +174,7 @@ contract CashRushNft is
     }
 
     function claim(uint256[] memory tokenIds) external {
-        uint256 share = (totalRewards + address(this).balance) / MAX_SUPPLY;
+        uint256 share = (totalRewards + address(this).balance) / totalMinted;
         uint256 total = 0;
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
@@ -193,12 +198,12 @@ contract CashRushNft is
     }
 
     function claimByOwner(uint256[] memory tokenIds) external onlyOwner {
-        uint256 share = (totalRewards + address(this).balance) / MAX_SUPPLY;
+        uint256 share = (totalRewards + address(this).balance) / totalMinted;
         uint256 total = 0;
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
             require(
-                tokenId >= 1 && tokenId <= MAX_SUPPLY,
+                tokenId >= 1 && tokenId <= totalMinted,
                 "Index out of bounds"
             );
             for (uint256 j = i + 1; j < tokenIds.length; j++) {
@@ -226,6 +231,7 @@ contract CashRushNft is
     // CashRush - Mint
     function safeMint(address to, uint256 tokenCount) external onlyOwner {
         require((totalSupply() + tokenCount) <= MAX_SUPPLY, "MAX_SUPPLY");
+        totalMinted += tokenCount;
         for (uint256 i = 0; i < tokenCount; i++) {
             uint256 tokenId = _tokenIdCounter.current();
             _tokenIdCounter.increment();
@@ -263,6 +269,7 @@ contract CashRushNft is
             "MerkleDistributor: Invalid  merkle proof"
         );
         minted1[account] += tokenCount;
+        totalMinted += tokenCount;
         for (uint256 i = 0; i < tokenCount; i++) {
             uint256 tokenId = _tokenIdCounter.current();
             _tokenIdCounter.increment();
@@ -286,6 +293,7 @@ contract CashRushNft is
         require(msg.value == tokenCount * price2, "Incorrect value");
         wallet.transfer(msg.value);
         minted2[account] += tokenCount;
+        totalMinted += tokenCount;
         for (uint256 i = 0; i < tokenCount; i++) {
             uint256 tokenId = _tokenIdCounter.current();
             _tokenIdCounter.increment();
@@ -299,6 +307,7 @@ contract CashRushNft is
         require((totalSupply() + tokenCount) <= MAX_SUPPLY, "MAX_SUPPLY");
         require(msg.value == tokenCount * price3, "Incorrect value");
         wallet.transfer(msg.value);
+        totalMinted += tokenCount;
         for (uint256 i = 0; i < tokenCount; i++) {
             uint256 tokenId = _tokenIdCounter.current();
             _tokenIdCounter.increment();
