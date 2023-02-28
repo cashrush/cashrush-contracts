@@ -37,9 +37,10 @@ abstract contract CashRushNftDataStore {
         if (ttype >= uint8(3) && ttype <= uint8(5)) {
             return 10; // Rare NFTs - 0.10%
         }
-        //if (ttype >= uint8(6) && ttype <= uint8(TOTAL_CARDS)) {
-        return 5; // Common NFTs - 0.05%
-        //}
+        if (ttype >= uint8(6) && ttype <= uint8(TOTAL_CARDS)) {
+            return 5; // Common NFTs - 0.05%
+        }
+        return 0; // Undefined NFTs - 0.00%
     }
 
     function tokensMaxRate(uint256[] memory tokenIds)
