@@ -59,7 +59,7 @@ contract CashRushNft is
     bool public isActiveWhitelistMint = false;
     bytes32 public merkleRoot2;
     mapping(address => uint256) public minted2;
-    uint256 public price2 = 0.03 ether;
+    uint256 public price2 = 0.03 ether; // TODO
     // Public Mint
     bool public isActivePublicMint = false;
     uint256 public price3 = 0.04 ether; // TODO
