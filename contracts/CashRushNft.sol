@@ -44,11 +44,12 @@ contract CashRushNft is
     string private constant _name = "CashRush";
     string private constant _symbol = "CASHRUSH";
     address public TRAITS;
-    string private _contractURI = "";
-    string private _baseURL = "";
-    string private _baseExtension = "";
+    string private _contractURI = "https://cashrush.gg/metadata/contract.json";
+    string private _baseURL = "https://cashrush.gg/metadata/";
+    string private _baseExtension = ".json";
     bool private _revealed = false;
-    string private _notRevealedURI = "";
+    string private _notRevealedURI =
+        "https://cashrush.gg/metadata/unrevealed.json";
 
     // Mints
     address payable public wallet;
@@ -60,10 +61,10 @@ contract CashRushNft is
     bool public isActiveWhitelistMint = false;
     bytes32 public merkleRoot2;
     mapping(address => uint256) public minted2;
-    uint256 public price2 = 0.03 ether; // TODO
+    uint256 public price2 = 0.001 ether; // TODO
     // Public Mint
     bool public isActivePublicMint = false;
-    uint256 public price3 = 0.04 ether; // TODO
+    uint256 public price3 = 0.001 ether; // TODO
 
     uint256 public totalRewards;
     mapping(uint256 => uint256) public rewards;
@@ -303,7 +304,6 @@ contract CashRushNft is
         }
     }
 
-    // TODO limit?
     function publicMint(uint256 tokenCount) external payable {
         require(isActivePublicMint, "Mint not active");
         require((totalSupply() + tokenCount) <= MAX_SUPPLY, "MAX_SUPPLY");
