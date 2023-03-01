@@ -31,7 +31,7 @@ abstract contract CashRushNftStaking is
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
             for (uint256 j = i + 1; j < tokenIds.length; j++) {
-                require(tokenId != tokenIds[j], "Duplicate tokenId");
+                require(tokenId != tokenIds[j]);
             }
             require(ownerOf(tokenId) == msg.sender, "Not token owner");
             if (isStaked[tokenId] != state) {

@@ -164,7 +164,7 @@ contract CashRushNft is
                 "Index out of bounds"
             );
             for (uint256 j = i + 1; j < tokenIds.length; j++) {
-                require(tokenId != tokenIds[j], "Duplicate tokenId");
+                require(tokenId != tokenIds[j]);
             }
             uint256 payedRewards = rewards[tokenId];
             if (payedRewards < share) {
@@ -181,7 +181,7 @@ contract CashRushNft is
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
             for (uint256 j = i + 1; j < tokenIds.length; j++) {
-                require(tokenId != tokenIds[j], "Duplicate tokenId");
+                require(tokenId != tokenIds[j]);
             }
             require(ownerOf(tokenId) == _msgSender(), "Not token owner");
             uint256 payedRewards = rewards[tokenId];
@@ -209,7 +209,7 @@ contract CashRushNft is
                 "Index out of bounds"
             );
             for (uint256 j = i + 1; j < tokenIds.length; j++) {
-                require(tokenId != tokenIds[j], "Duplicate tokenId");
+                require(tokenId != tokenIds[j]);
             }
             require(
                 (rewardsLastClaim[tokenId] + DAY * 90) <= block.timestamp,

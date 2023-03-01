@@ -11,7 +11,7 @@ abstract contract CashRushNftDataStore {
     event TypeUpdated(uint256 indexed tokenId, uint8 prevValue, uint8 newValue);
 
     function _uploadTypes(uint256 shift, bytes memory types) internal {
-        require(!dataIsFrozen, "Data is frozen");
+        require(!dataIsFrozen);
         for (uint256 i = 0; i < types.length; i++) {
             uint256 tokenId = shift + i;
             uint8 value = uint8(types[i]);
