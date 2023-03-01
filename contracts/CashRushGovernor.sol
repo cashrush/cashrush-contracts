@@ -16,7 +16,7 @@ contract CashRushGovernor is
 {
     constructor(IVotes _token)
         Governor("CashRushGovernor")
-        GovernorSettings(1, 50400, 1)
+        GovernorSettings(0, 50400, 1)
         GovernorVotes(_token)
         GovernorVotesQuorumFraction(1)
     {
