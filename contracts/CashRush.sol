@@ -349,6 +349,7 @@ contract CashRush is Ownable {
         secondsPassed = secondsPassed.add(
             secondsPassed.mul(extraRate).div(100)
         );
+        secondsPassed = _min(LOOT_TO_HIRE_1MOBSTER, secondsPassed);
         return secondsPassed.mul(user.mobsters);
     }
 
