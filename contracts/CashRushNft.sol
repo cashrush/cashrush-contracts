@@ -269,7 +269,7 @@ contract CashRushNft is
         require((minted1[account] + tokenCount) <= 1, "Mint limit");
         require((totalSupply() + tokenCount) <= MAX_SUPPLY, "MAX_SUPPLY");
         require(
-            _verify1(_leaf(account, tokenCount), merkleProof),
+            _verify1(_leaf(account, 1), merkleProof),
             "MerkleDistributor: Invalid  merkle proof"
         );
         minted1[account] += tokenCount;
@@ -289,7 +289,7 @@ contract CashRushNft is
         require(isActiveWhitelistMint, "Mint not active");
         require((minted2[account] + tokenCount) <= 5, "Mint limit");
         require(
-            _verify2(_leaf(account, tokenCount), merkleProof),
+            _verify2(_leaf(account, 1), merkleProof),
             "MerkleDistributor: Invalid  merkle proof"
         );
         require((totalSupply() + tokenCount) <= MAX_SUPPLY, "MAX_SUPPLY");
