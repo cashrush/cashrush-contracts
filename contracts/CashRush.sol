@@ -79,9 +79,9 @@ contract CashRush is Ownable {
     event Hiring(address indexed user, uint256 loot, uint256 mobsters);
     event Sale(address indexed user, uint256 loot, uint256 eth);
 
-    constructor() {
+    constructor(address _devWallet) {
         // TODO multisig address
-        devWallet = payable(_msgSender());
+        devWallet = payable(_devWallet);
         //nftWallet = payable(?);
         //poolWallet = ?;
 
