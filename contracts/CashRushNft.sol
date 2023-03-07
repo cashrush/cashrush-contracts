@@ -41,7 +41,7 @@ contract CashRushNft is
     Counters.Counter private _tokenIdCounter;
 
     // Metadata
-    string private constant _name = "CashRush";
+    string private constant _name = "CASH RUSH";
     string private constant _symbol = "CASHRUSH";
     address public TRAITS;
     string private _contractURI = "https://cashrush.gg/metadata/contract.json";
