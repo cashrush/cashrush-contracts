@@ -59,8 +59,6 @@ contract CashRush is Ownable {
         address payable user;
     }
     mapping(address => Referral) public referrers;
-    mapping(address => mapping(uint256 => uint256)) private referralsIncome;
-    mapping(address => mapping(uint256 => uint256)) private referralsCount;
 
     uint256 public marketLoot;
     bool private isPurchase = false;
