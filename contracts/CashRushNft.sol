@@ -44,12 +44,11 @@ contract CashRushNft is
     string private constant _name = "CASH RUSH";
     string private constant _symbol = "CASHRUSH";
     address public TRAITS;
-    string private _contractURI = "https://cashrush.gg/metadata/contract.json";
-    string private _baseURL = "https://cashrush.gg/metadata/";
+    string private _contractURI = "";
+    string private _baseURL = "";
     string private _baseExtension = ".json";
     bool private _revealed = false;
-    string private _notRevealedURI =
-        "https://cashrush.gg/metadata/unrevealed.json";
+    string private _notRevealedURI = "";
 
     // Mints
     address payable public wallet;
@@ -61,10 +60,10 @@ contract CashRushNft is
     bool public isActiveWhitelistMint = false;
     bytes32 public merkleRoot2;
     mapping(address => uint256) public minted2;
-    uint256 public price2 = 0.001 ether; // TODO
+    uint256 public price2 = 0.03 ether; // TODO
     // Public Mint
     bool public isActivePublicMint = false;
-    uint256 public price3 = 0.001 ether; // TODO
+    uint256 public price3 = 0.04 ether; // TODO
 
     uint256 public totalRewards;
     mapping(uint256 => uint256) public rewards;
@@ -102,10 +101,10 @@ contract CashRushNft is
     }
 
     // CashRush - kill
-    function kill(uint256 tokenId, bytes memory signature)
-        external
-        whenNotStaked(tokenId)
-    {
+    function kill(
+        uint256 tokenId,
+        bytes memory signature
+    ) external whenNotStaked(tokenId) {
         require(_msgSender() == killer, "Access denied");
 
         if (killSigner != address(0)) {
@@ -126,10 +125,10 @@ contract CashRushNft is
         killSigner = newKillSigner;
     }
 
-    function _checkSignature(uint256 tokenId, bytes memory signature)
-        internal
-        view
-    {
+    function _checkSignature(
+        uint256 tokenId,
+        bytes memory signature
+    ) internal view {
         address tokenOwner = _ownerOf(tokenId);
         require(
             _signatureWallet(tokenId, tokenOwner, signature) == killSigner,
@@ -150,11 +149,9 @@ contract CashRushNft is
     }
 
     // CashRush - Game fees distribution
-    function accumulated(uint256[] memory tokenIds)
-        external
-        view
-        returns (uint256)
-    {
+    function accumulated(
+        uint256[] memory tokenIds
+    ) external view returns (uint256) {
         uint256 share = (totalRewards + address(this).balance) / totalMinted;
         uint256 total = 0;
         for (uint256 i = 0; i < tokenIds.length; i++) {
@@ -317,27 +314,24 @@ contract CashRushNft is
         }
     }
 
-    function _leaf(address account, uint256 amount)
-        internal
-        pure
-        returns (bytes32)
-    {
+    function _leaf(
+        address account,
+        uint256 amount
+    ) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(account, amount));
     }
 
-    function _verify1(bytes32 leaf, bytes32[] memory merkleProof)
-        internal
-        view
-        returns (bool)
-    {
+    function _verify1(
+        bytes32 leaf,
+        bytes32[] memory merkleProof
+    ) internal view returns (bool) {
         return MerkleProof.verify(merkleProof, merkleRoot1, leaf);
     }
 
-    function _verify2(bytes32 leaf, bytes32[] memory merkleProof)
-        internal
-        view
-        returns (bool)
-    {
+    function _verify2(
+        bytes32 leaf,
+        bytes32[] memory merkleProof
+    ) internal view returns (bool) {
         return MerkleProof.verify(merkleProof, merkleRoot2, leaf);
     }
 
@@ -358,11 +352,9 @@ contract CashRushNft is
         return _ownerOf(tokenId);
     }
 
-    function tokensOfOwner(address owner)
-        external
-        view
-        returns (uint256[] memory)
-    {
+    function tokensOfOwner(
+        address owner
+    ) external view returns (uint256[] memory) {
         uint256 tokenCount = balanceOf(owner);
         require(0 < tokenCount, "ERC721Enumerable: owner index out of bounds");
         uint256[] memory tokenIds = new uint256[](tokenCount);
@@ -399,12 +391,9 @@ contract CashRushNft is
         _contractURI = uri_;
     }
 
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override
-        returns (string memory)
-    {
+    function tokenURI(
+        uint256 tokenId
+    ) public view override returns (string memory) {
         require(
             _exists(tokenId),
             "ERC721Metadata: URI query for nonexistent token"
@@ -433,10 +422,10 @@ contract CashRushNft is
     }
 
     // Royalty
-    function setDefaultRoyalty(address royaltyReceiver, uint96 royaltyNumerator)
-        external
-        onlyOwner
-    {
+    function setDefaultRoyalty(
+        address royaltyReceiver,
+        uint96 royaltyNumerator
+    ) external onlyOwner {
         _setDefaultRoyalty(royaltyReceiver, royaltyNumerator);
     }
 
@@ -463,19 +452,17 @@ contract CashRushNft is
         super._afterTokenTransfer(from, to, tokenId, batchSize);
     }
 
-    function setApprovalForAll(address operator, bool approved)
-        public
-        override(ERC721, IERC721)
-        onlyAllowedOperatorApproval(operator)
-    {
+    function setApprovalForAll(
+        address operator,
+        bool approved
+    ) public override(ERC721, IERC721) onlyAllowedOperatorApproval(operator) {
         super.setApprovalForAll(operator, approved);
     }
 
-    function approve(address operator, uint256 tokenId)
-        public
-        override(ERC721, IERC721)
-        onlyAllowedOperatorApproval(operator)
-    {
+    function approve(
+        address operator,
+        uint256 tokenId
+    ) public override(ERC721, IERC721) onlyAllowedOperatorApproval(operator) {
         super.approve(operator, tokenId);
     }
 
@@ -523,7 +510,9 @@ contract CashRushNft is
         super.safeTransferFrom(from, to, tokenId, data);
     }
 
-    function supportsInterface(bytes4 interfaceId)
+    function supportsInterface(
+        bytes4 interfaceId
+    )
         public
         view
         override(ERC721, ERC721Enumerable, CashRushNftStaking, ERC2981)

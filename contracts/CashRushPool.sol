@@ -36,12 +36,9 @@ contract CashRushPool {
         }
     }
 
-    function deposit(address account)
-        external
-        payable
-        onlyDepositors
-        returns (bool)
-    {
+    function deposit(
+        address account
+    ) external payable onlyDepositors returns (bool) {
         lastDeposit = block.timestamp;
         uint256 id = nextId++;
         accounts[id] = account;

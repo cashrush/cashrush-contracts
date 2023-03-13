@@ -14,7 +14,9 @@ contract CashRushGovernor is
     GovernorVotes,
     GovernorVotesQuorumFraction
 {
-    constructor(IVotes _token)
+    constructor(
+        IVotes _token
+    )
         Governor("CashRushGovernor")
         GovernorSettings(0, 50400, 1)
         GovernorVotes(_token)
@@ -47,7 +49,9 @@ contract CashRushGovernor is
         return super.votingPeriod();
     }
 
-    function quorum(uint256 blockNumber)
+    function quorum(
+        uint256 blockNumber
+    )
         public
         view
         override(IGovernor, GovernorVotesQuorumFraction)

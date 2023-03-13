@@ -49,11 +49,9 @@ abstract contract CashRushNftStaking is
         return tokensMaxRate(tokensStakedOfOwner(account));
     }
 
-    function tokensStakedOfOwner(address owner)
-        public
-        view
-        returns (uint256[] memory)
-    {
+    function tokensStakedOfOwner(
+        address owner
+    ) public view returns (uint256[] memory) {
         uint256 tokenCount = balanceOf(owner);
         require(0 < tokenCount, "ERC721Enumerable: owner index out of bounds");
         uint256 stakedCount = 0;
@@ -91,13 +89,9 @@ abstract contract CashRushNftStaking is
         super._beforeTokenTransfer(from, to, tokenId, batchSize);
     }
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override(ERC721, ERC721Enumerable)
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override(ERC721, ERC721Enumerable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }

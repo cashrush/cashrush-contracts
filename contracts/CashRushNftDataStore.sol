@@ -43,11 +43,9 @@ abstract contract CashRushNftDataStore {
         return 0; // Undefined NFTs - 0.00%
     }
 
-    function tokensMaxRate(uint256[] memory tokenIds)
-        public
-        view
-        returns (uint256 maxRate)
-    {
+    function tokensMaxRate(
+        uint256[] memory tokenIds
+    ) public view returns (uint256 maxRate) {
         uint256 tokenMaxRate = 0; // 0 - 20
         bool[] memory set = new bool[](TOTAL_CARDS + 1);
         for (uint256 i = 0; i < tokenIds.length; i++) {
