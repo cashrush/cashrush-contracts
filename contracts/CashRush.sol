@@ -24,7 +24,6 @@ contract CashRush is Ownable {
     uint256 private constant MIN_DEPOSIT = 0.05 ether;
     uint256 private constant DEPOSIT_STEP = 2 ether;
 
-    //+
     uint256 private constant DEV_FEE_PERCENT = 300;
     uint256 private constant NFT_FEE_PERCENT = 300;
     uint256 private constant POOL_FEE_PERCENT = 50;
@@ -32,13 +31,11 @@ contract CashRush is Ownable {
     uint256 private constant REF_PERCENT = 500;
     uint256 private constant DECIMALS = 10000;
 
-    //+
     address payable public root;
     address payable public devWallet;
     address payable public nftWallet;
     address public poolWallet;
 
-    //+
     bool public initialized = false;
     uint256 public initializedAt;
 
@@ -250,11 +247,10 @@ contract CashRush is Ownable {
             );
     }
 
-    function _calculateLootBuy(uint256 eth, uint256 contractBalance)
-        private
-        view
-        returns (uint256)
-    {
+    function _calculateLootBuy(
+        uint256 eth,
+        uint256 contractBalance
+    ) private view returns (uint256) {
         return _calculateTrade(eth, contractBalance, marketLoot);
     }
 
@@ -277,11 +273,10 @@ contract CashRush is Ownable {
     }
 
     // 3+3+0.5 +5
-    function _allFees(uint256 amount, bool withRef)
-        private
-        pure
-        returns (uint256)
-    {
+    function _allFees(
+        uint256 amount,
+        bool withRef
+    ) private pure returns (uint256) {
         if (withRef)
             return
                 _devFee(amount) +
@@ -333,11 +328,9 @@ contract CashRush is Ownable {
         return user.loot.add(getMyLootSinceLastHire(_user));
     }
 
-    function getMyLootSinceLastHire(address _user)
-        public
-        view
-        returns (uint256)
-    {
+    function getMyLootSinceLastHire(
+        address _user
+    ) public view returns (uint256) {
         User memory user = users[_user];
         uint256 secondsPassed = _min(
             LOOT_TO_HIRE_1MOBSTER,
