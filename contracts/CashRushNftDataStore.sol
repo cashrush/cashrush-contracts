@@ -56,21 +56,6 @@ abstract contract CashRushNftDataStore {
             tokenMaxRate = _max(trate, tokenMaxRate);
         }
 
-        //  hidden combinations
-        if (set[5]) {
-            if (set[1] || set[3] || set[8] || set[11]) {
-                return 500; // 5.00%
-            }
-        }
-        if (set[9] && set[12]) {
-            return 500; // 5.00%
-        }
-        if (set[10]) {
-            if (set[1] || set[4]) {
-                return 500; // 5.00%
-            }
-        }
-
         // sets
         if (
             set[1] &&
@@ -93,9 +78,37 @@ abstract contract CashRushNftDataStore {
         if (set[1] && set[2]) {
             return 30; // Set of Legendary NFTs - 0.30%
         }
+
+        // 0.20% + 0.10%
+        if (set[1] && set[5]) {
+            return 30;
+        }
+        // 0.20% + 0.05%
+        if (set[1] && set[10]) {
+            return 25;
+        }
+
+        // 0.10% + 0.10%
+        if (set[3] && set[5]) {
+            return 20;
+        }
+
         if (set[3] && set[4] && set[5]) {
             return 20; // Set of Rare NFTs - 0.20%
         }
+
+        // 0.10% + 0.05%
+        if (set[4] && set[10]) {
+            return _max(15, tokenMaxRate);
+        }
+        // 0.10% +
+        if (set[5]) {
+            // 0.05% || 0.05%
+            if (set[8] || set[11]) {
+                return _max(15, tokenMaxRate);
+            }
+        }
+
         if (
             set[6] &&
             set[7] &&
@@ -108,6 +121,11 @@ abstract contract CashRushNftDataStore {
             set[14]
         ) {
             return _max(15, tokenMaxRate); // Set of Common NFTs - 0.15%
+        }
+
+        // 0.05% + 0.05%
+        if (set[9] && set[12]) {
+            return _max(10, tokenMaxRate);
         }
 
         return tokenMaxRate; // cards max rate
