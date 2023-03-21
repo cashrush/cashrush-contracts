@@ -94,8 +94,8 @@ contract CashRushNft is
         _tokenIdCounter.increment();
 
         chainId = block.chainid;
-        //emit KillerChanged(killer, _msgSender());
-        //killer = _msgSender();
+        emit KillerChanged(killer, _msgSender());
+        killer = _msgSender();
         //emit KillSignerChanged(killSigner, _msgSender());
         //killSigner = _msgSender();
     }
