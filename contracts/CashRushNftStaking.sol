@@ -27,7 +27,7 @@ abstract contract CashRushNftStaking is
     }
 
     function _stake(uint256[] memory tokenIds, bool state) private {
-        require(dataIsFrozen, "Staking not allowed");
+        require(dataIsFrozen);
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
             for (uint256 j = i + 1; j < tokenIds.length; j++) {
