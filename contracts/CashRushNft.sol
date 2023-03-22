@@ -44,11 +44,12 @@ contract CashRushNft is
     string private constant _name = "CASH RUSH";
     string private constant _symbol = "CASHRUSH";
     address public TRAITS;
-    string private _contractURI = "";
-    string private _baseURL = "";
+    string private _contractURI = "https://cashrush.gg/metadata/contract.json";
+    string private _baseURL = "https://cashrush.gg/metadata/";
     string private _baseExtension = ".json";
     bool private _revealed = false;
-    string private _notRevealedURI = "";
+    string private _notRevealedURI =
+        "https://cashrush.gg/metadata/unrevealed.json";
 
     // Mints
     address payable public wallet;
