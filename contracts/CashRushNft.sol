@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/draft-ERC721Votes.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./CashRushNftStaking.sol";
@@ -29,6 +30,7 @@ contract CashRushNft is
     DefaultOperatorFilterer,
     EIP712,
     ERC721Votes,
+    ReentrancyGuard,
     Ownable
 {
     using Strings for uint256;
@@ -37,7 +39,7 @@ contract CashRushNft is
     uint256 private constant DAY = 86_400;
     uint256 private constant MAX_SUPPLY = 4000;
     uint256 private constant FREE_MINT = 200;
-    uint256 private totalMinted = 0;
+    uint256 private totalMinted;
     Counters.Counter private _tokenIdCounter;
 
     // Metadata
@@ -61,10 +63,10 @@ contract CashRushNft is
     bool public isActiveWhitelistMint = false;
     bytes32 public merkleRoot2;
     mapping(address => uint256) public minted2;
-    uint256 public price2 = 0.03 ether; // TODO
+    uint256 public price2 = 0.03 ether;
     // Public Mint
     bool public isActivePublicMint = false;
-    uint256 public price3 = 0.04 ether; // TODO
+    uint256 public price3 = 0.04 ether;
 
     uint256 public totalRewards;
     mapping(uint256 => uint256) public rewards;
@@ -82,6 +84,9 @@ contract CashRushNft is
         address indexed oldKillSigner,
         address indexed newKillSigner
     );
+
+    error IndexOutOfBounds();
+    error DuplicateTokenId();
 
     constructor(
         address _wallet,
@@ -154,32 +159,28 @@ contract CashRushNft is
         uint256[] memory tokenIds
     ) external view returns (uint256) {
         uint256 share = (totalRewards + address(this).balance) / totalMinted;
-        uint256 total = 0;
+        uint256 total;
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
-            require(
-                tokenId >= 1 && tokenId <= totalMinted,
-                "Index out of bounds"
-            );
+            if (tokenId < 1 || tokenId > totalMinted) revert IndexOutOfBounds();
             for (uint256 j = i + 1; j < tokenIds.length; j++) {
-                require(tokenId != tokenIds[j]);
+                if (tokenId == tokenIds[j]) revert DuplicateTokenId();
             }
             uint256 payedRewards = rewards[tokenId];
             if (payedRewards < share) {
-                uint256 toPay = share - payedRewards;
-                total += toPay;
+                total += (share - payedRewards);
             }
         }
         return total;
     }
 
-    function claim(uint256[] memory tokenIds) external {
+    function claim(uint256[] memory tokenIds) external nonReentrant {
         uint256 share = (totalRewards + address(this).balance) / totalMinted;
-        uint256 total = 0;
+        uint256 total;
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
             for (uint256 j = i + 1; j < tokenIds.length; j++) {
-                require(tokenId != tokenIds[j]);
+                if (tokenId == tokenIds[j]) revert DuplicateTokenId();
             }
             require(ownerOf(tokenId) == _msgSender(), "Not token owner");
             uint256 payedRewards = rewards[tokenId];
@@ -191,23 +192,21 @@ contract CashRushNft is
             }
         }
         if (total > 0) {
-            address payable recipient = payable(_msgSender());
-            recipient.transfer(total);
+            _sendEth(payable(_msgSender()), total);
             totalRewards += total;
         }
     }
 
-    function claimByOwner(uint256[] memory tokenIds) external onlyOwner {
+    function claimByOwner(
+        uint256[] memory tokenIds
+    ) external nonReentrant onlyOwner {
         uint256 share = (totalRewards + address(this).balance) / totalMinted;
-        uint256 total = 0;
+        uint256 total;
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
-            require(
-                tokenId >= 1 && tokenId <= totalMinted,
-                "Index out of bounds"
-            );
+            if (tokenId < 1 || tokenId > totalMinted) revert IndexOutOfBounds();
             for (uint256 j = i + 1; j < tokenIds.length; j++) {
-                require(tokenId != tokenIds[j]);
+                if (tokenId == tokenIds[j]) revert DuplicateTokenId();
             }
             require(
                 (rewardsLastClaim[tokenId] + DAY * 90) <= block.timestamp,
@@ -222,14 +221,16 @@ contract CashRushNft is
             }
         }
         if (total > 0) {
-            address payable recipient = payable(_msgSender());
-            recipient.transfer(total);
+            _sendEth(payable(_msgSender()), total);
             totalRewards += total;
         }
     }
 
     // CashRush - Mint
-    function safeMint(address to, uint256 tokenCount) external onlyOwner {
+    function safeMint(
+        address to,
+        uint256 tokenCount
+    ) external nonReentrant onlyOwner {
         require((totalSupply() + tokenCount) <= MAX_SUPPLY, "MAX_SUPPLY");
         totalMinted += tokenCount;
         for (uint256 i = 0; i < tokenCount; i++) {
@@ -259,13 +260,12 @@ contract CashRushNft is
         address account,
         uint256 tokenCount,
         bytes32[] calldata merkleProof
-    ) external {
+    ) external nonReentrant {
         require(
             isActiveFreeMint && totalSupply() <= FREE_MINT,
             "Mint not active"
         );
         require((minted1[account] + tokenCount) <= 1, "Mint limit");
-        require((totalSupply() + tokenCount) <= MAX_SUPPLY, "MAX_SUPPLY");
         require(
             _verify1(_leaf(account, 1), merkleProof),
             "MerkleDistributor: Invalid  merkle proof"
@@ -283,7 +283,7 @@ contract CashRushNft is
         address account,
         uint256 tokenCount,
         bytes32[] calldata merkleProof
-    ) external payable {
+    ) external payable nonReentrant {
         require(isActiveWhitelistMint, "Mint not active");
         require((minted2[account] + tokenCount) <= 5, "Mint limit");
         require(
@@ -292,7 +292,7 @@ contract CashRushNft is
         );
         require((totalSupply() + tokenCount) <= MAX_SUPPLY, "MAX_SUPPLY");
         require(msg.value == tokenCount * price2, "Incorrect value");
-        wallet.transfer(msg.value);
+        _sendEth(wallet, msg.value);
         minted2[account] += tokenCount;
         totalMinted += tokenCount;
         for (uint256 i = 0; i < tokenCount; i++) {
@@ -302,17 +302,22 @@ contract CashRushNft is
         }
     }
 
-    function publicMint(uint256 tokenCount) external payable {
+    function publicMint(uint256 tokenCount) external payable nonReentrant {
         require(isActivePublicMint, "Mint not active");
         require((totalSupply() + tokenCount) <= MAX_SUPPLY, "MAX_SUPPLY");
         require(msg.value == tokenCount * price3, "Incorrect value");
-        wallet.transfer(msg.value);
+        _sendEth(wallet, msg.value);
         totalMinted += tokenCount;
         for (uint256 i = 0; i < tokenCount; i++) {
             uint256 tokenId = _tokenIdCounter.current();
             _tokenIdCounter.increment();
             _safeMint(_msgSender(), tokenId);
         }
+    }
+
+    function _sendEth(address payable recipient, uint256 amount) private {
+        (bool success, ) = recipient.call{value: amount}("");
+        require(success, "ETH_TRANSFER_FAILED");
     }
 
     function _leaf(
