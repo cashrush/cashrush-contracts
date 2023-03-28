@@ -3,12 +3,13 @@ pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 interface iNft {
     function extraRate(address account) external view returns (uint256 _rate);
 }
 
-contract CashRush is Ownable {
+contract CashRush is ReentrancyGuard, Ownable {
     using SafeMath for uint256;
 
     uint256 private constant PSN = 10_000;
@@ -74,11 +75,17 @@ contract CashRush is Ownable {
     event Hiring(address indexed user, uint256 loot, uint256 mobsters);
     event Sale(address indexed user, uint256 loot, uint256 eth);
 
-    constructor(address _devWallet, address _nftWallet) {
-        // TODO multisig address
+    event DevWalletChanged(address prevAddr, address newAddr);
+    event NftWalletChanged(address prevAddr, address newAddr);
+    event PoolWalletChanged(address prevAddr, address newAddr);
+
+    constructor(address _devWallet, address _nftWallet, address _poolWallet) {
+        emit DevWalletChanged(devWallet, _devWallet);
+        emit NftWalletChanged(nftWallet, _nftWallet);
+        emit PoolWalletChanged(poolWallet, _poolWallet);
         devWallet = payable(_devWallet);
         nftWallet = payable(_nftWallet);
-        //poolWallet = ?;
+        poolWallet = payable(_poolWallet);
 
         referrers[_msgSender()] = Referral(
             payable(_msgSender()),
@@ -88,17 +95,9 @@ contract CashRush is Ownable {
     }
 
     function setDevWallet(address newWallet) external onlyOwner {
+        require(newWallet != address(0), "Is zero address");
+        emit DevWalletChanged(devWallet, newWallet);
         devWallet = payable(newWallet);
-    }
-
-    function setNftWallet(address newWallet) external onlyOwner {
-        require(nftWallet == address(0), "Already set");
-        nftWallet = payable(newWallet);
-    }
-
-    function setPoolWallet(address newWallet) external onlyOwner {
-        require(poolWallet == address(0), "Already set");
-        poolWallet = newWallet;
     }
 
     function getMaxDeposit(address _user) public view returns (uint256) {
@@ -113,7 +112,7 @@ contract CashRush is Ownable {
     }
 
     // deposit
-    function buyLoot(address payable inviter) external payable {
+    function buyLoot(address payable inviter) external payable nonReentrant {
         require(msg.value >= MIN_DEPOSIT, "DEPOSIT MINIMUM VALUE");
         require(
             msg.value <= getMaxDeposit(_msgSender()),
@@ -152,15 +151,15 @@ contract CashRush is Ownable {
         emit Purchase(_msgSender(), inviter, msg.value, lootBought);
 
         uint256 devFee = _devFee(msg.value);
-        devWallet.transfer(devFee);
+        _sendEth(devWallet, devFee);
         uint256 nftFee = _nftFee(msg.value);
-        nftWallet.transfer(nftFee);
+        _sendEth(nftWallet, nftFee);
         uint256 poolFee = _poolFee(msg.value);
         _sendToPoolWallet(_msgSender(), poolFee);
 
         if (inviter != root) {
             uint256 refFee = _refFee(msg.value);
-            inviter.transfer(refFee);
+            _sendEth(inviter, refFee);
         }
 
         isPurchase = true;
@@ -200,7 +199,7 @@ contract CashRush is Ownable {
     }
 
     // withdraw
-    function sellLoot() external whenInitialized {
+    function sellLoot() external whenInitialized nonReentrant {
         User memory user = users[_msgSender()];
         require((user.lastClaim + 7 * ONE_DAY) <= block.timestamp, "Too early");
 
@@ -209,9 +208,9 @@ contract CashRush is Ownable {
         require(getBalance() >= ethValue, "NOT ENOUGH BALANCE");
 
         uint256 devFee = _devFee(ethValue);
-        devWallet.transfer(devFee);
+        _sendEth(devWallet, devFee);
         uint256 nftFee = _nftFee(ethValue);
-        nftWallet.transfer(nftFee);
+        _sendEth(nftWallet, nftFee);
 
         ethValue = ethValue.sub(devFee.add(nftFee));
 
@@ -221,7 +220,7 @@ contract CashRush is Ownable {
         users[_msgSender()] = user;
         marketLoot = marketLoot.add(hasLoot);
 
-        payable(_msgSender()).transfer(ethValue);
+        _sendEth(payable(_msgSender()), ethValue);
         emit Sale(_msgSender(), hasLoot, ethValue);
     }
 
@@ -272,6 +271,11 @@ contract CashRush is Ownable {
         );
     }
 
+    function _sendEth(address payable recipient, uint256 amount) private {
+        (bool success, ) = recipient.call{value: amount}("");
+        require(success, "ETH_TRANSFER_FAILED");
+    }
+
     // 3+3+0.5 +5
     function _allFees(
         uint256 amount,
@@ -319,13 +323,11 @@ contract CashRush is Ownable {
     }
 
     function getMyMobsters(address _user) external view returns (uint256) {
-        User memory user = users[_user];
-        return user.mobsters;
+        return users[_user].mobsters;
     }
 
     function getMyLoot(address _user) public view returns (uint256) {
-        User memory user = users[_user];
-        return user.loot.add(getMyLootSinceLastHire(_user));
+        return users[_user].loot.add(getMyLootSinceLastHire(_user));
     }
 
     function getMyLootSinceLastHire(
