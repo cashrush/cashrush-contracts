@@ -17,6 +17,9 @@ abstract contract CashRushNftStaking is
     event Unstaked(uint256 indexed tokenId);
     event ExtraRateSetted(address indexed account, uint256 extraRate);
 
+    error DuplicateTokenId();
+    error NotTokenOwner();
+
     function stake(uint256[] memory tokenIds) external {
         _stake(tokenIds, true);
     }
@@ -26,13 +29,13 @@ abstract contract CashRushNftStaking is
     }
 
     function _stake(uint256[] memory tokenIds, bool state) private {
-        require(dataIsFrozen);
+        if (!dataIsFrozen) revert ErrorIsFrozen();
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
             for (uint256 j = i + 1; j < tokenIds.length; j++) {
-                require(tokenId != tokenIds[j]);
+                if (tokenId == tokenIds[j]) revert DuplicateTokenId();
             }
-            require(ownerOf(tokenId) == msg.sender, "Not token owner");
+            if (ownerOf(tokenId) != msg.sender) revert NotTokenOwner();
             if (isStaked[tokenId] != state) {
                 if (state) emit Staked(tokenId);
                 else emit Unstaked(tokenId);

@@ -4,14 +4,16 @@ pragma solidity 0.8.17;
 abstract contract CashRushNftDataStore {
     uint8 private constant TOTAL_CARDS = 14;
 
-    bool public dataIsFrozen = false;
+    bool public dataIsFrozen;
     mapping(uint256 => uint8) public tokenType;
 
     event DataFrozen(bool isFrozen);
     event TypeUpdated(uint256 indexed tokenId, uint8 prevValue, uint8 newValue);
 
+    error ErrorIsFrozen();
+
     function _uploadTypes(uint256 shift, bytes memory types) internal {
-        require(!dataIsFrozen);
+        if (dataIsFrozen) revert ErrorIsFrozen();
         for (uint256 i = 0; i < types.length; i++) {
             uint256 tokenId = shift + i;
             uint8 value = uint8(types[i]);

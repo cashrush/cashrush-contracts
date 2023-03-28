@@ -86,7 +86,10 @@ contract CashRushNft is
     );
 
     error IndexOutOfBounds();
-    error DuplicateTokenId();
+    error URIQueryForNonexistentToken();
+    error MintNotActive();
+    error MintLimit();
+    error NotAuthorized();
 
     constructor(
         address _wallet,
@@ -136,10 +139,8 @@ contract CashRushNft is
         bytes memory signature
     ) internal view {
         address tokenOwner = _ownerOf(tokenId);
-        require(
-            _signatureWallet(tokenId, tokenOwner, signature) == killSigner,
-            "Not authorized"
-        );
+        if (_signatureWallet(tokenId, tokenOwner, signature) != killSigner)
+            revert NotAuthorized();
     }
 
     function _signatureWallet(
@@ -182,7 +183,7 @@ contract CashRushNft is
             for (uint256 j = i + 1; j < tokenIds.length; j++) {
                 if (tokenId == tokenIds[j]) revert DuplicateTokenId();
             }
-            require(ownerOf(tokenId) == _msgSender(), "Not token owner");
+            if (ownerOf(tokenId) != _msgSender()) revert NotTokenOwner();
             uint256 payedRewards = rewards[tokenId];
             if (payedRewards < share) {
                 uint256 toPay = share - payedRewards;
@@ -261,11 +262,9 @@ contract CashRushNft is
         uint256 tokenCount,
         bytes32[] calldata merkleProof
     ) external nonReentrant {
-        require(
-            isActiveFreeMint && totalSupply() <= FREE_MINT,
-            "Mint not active"
-        );
-        require((minted1[account] + tokenCount) <= 1, "Mint limit");
+        if (!isActiveFreeMint || (totalSupply() > FREE_MINT))
+            revert MintNotActive();
+        if ((minted1[account] + tokenCount) > 1) revert MintLimit();
         require(
             _verify1(_leaf(account, 1), merkleProof),
             "MerkleDistributor: Invalid  merkle proof"
@@ -284,8 +283,8 @@ contract CashRushNft is
         uint256 tokenCount,
         bytes32[] calldata merkleProof
     ) external payable nonReentrant {
-        require(isActiveWhitelistMint, "Mint not active");
-        require((minted2[account] + tokenCount) <= 5, "Mint limit");
+        if (!isActiveWhitelistMint) revert MintNotActive();
+        if ((minted2[account] + tokenCount) > 5) revert MintLimit();
         require(
             _verify2(_leaf(account, 1), merkleProof),
             "MerkleDistributor: Invalid  merkle proof"
@@ -303,7 +302,7 @@ contract CashRushNft is
     }
 
     function publicMint(uint256 tokenCount) external payable nonReentrant {
-        require(isActivePublicMint, "Mint not active");
+        if (!isActivePublicMint) revert MintNotActive();
         require((totalSupply() + tokenCount) <= MAX_SUPPLY, "MAX_SUPPLY");
         require(msg.value == tokenCount * price3, "Incorrect value");
         _sendEth(wallet, msg.value);
@@ -400,10 +399,7 @@ contract CashRushNft is
     function tokenURI(
         uint256 tokenId
     ) public view override returns (string memory) {
-        require(
-            _exists(tokenId),
-            "ERC721Metadata: URI query for nonexistent token"
-        );
+        if (!_exists(tokenId)) revert URIQueryForNonexistentToken();
 
         if (!_revealed) return _notRevealedURI;
 
