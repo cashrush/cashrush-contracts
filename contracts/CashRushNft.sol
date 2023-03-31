@@ -38,13 +38,11 @@ contract CashRushNft is
 
     uint256 private constant DAY = 86_400;
     uint256 private constant MAX_SUPPLY = 4000;
-    uint256 private constant FREE_MINT = 200;
+    uint256 public FREE_MINT = 170;
     uint256 private totalMinted;
     Counters.Counter private _tokenIdCounter;
 
     // Metadata
-    string private constant _name = "CASH RUSH";
-    string private constant _symbol = "CASHRUSH";
     address public TRAITS;
     string private _contractURI = "https://cashrush.gg/metadata/contract.json";
     string private _baseURL = "https://cashrush.gg/metadata/";
@@ -91,13 +89,13 @@ contract CashRushNft is
     error MintLimit();
     error NotAuthorized();
 
-    constructor(
-        address _wallet,
-        address royaltyReceiver,
-        uint96 royaltyNumerator
-    ) public ERC721(_name, _symbol) EIP712(_name, "1") {
-        wallet = payable(_wallet);
-        _setDefaultRoyalty(royaltyReceiver, royaltyNumerator);
+    constructor()
+        public
+        ERC721("CASH RUSH", "CASHRUSH")
+        EIP712("CASH RUSH", "1")
+    {
+        wallet = payable(0x8fa9873B72caF6215EbB5f9956d3CC67aa91F951);
+        _setDefaultRoyalty(0x8fa9873B72caF6215EbB5f9956d3CC67aa91F951, 500);
 
         // Setting start from 1.
         _tokenIdCounter.increment();
@@ -259,23 +257,20 @@ contract CashRushNft is
 
     function freeMint(
         address account,
-        uint256 tokenCount,
         bytes32[] calldata merkleProof
     ) external nonReentrant {
-        if (!isActiveFreeMint || (totalSupply() > FREE_MINT))
-            revert MintNotActive();
-        if ((minted1[account] + tokenCount) > 1) revert MintLimit();
+        if (!isActiveFreeMint || FREE_MINT == 0) revert MintNotActive();
+        if (minted1[account] >= 1) revert MintLimit();
         require(
             _verify1(_leaf(account, 1), merkleProof),
             "MerkleDistributor: Invalid  merkle proof"
         );
-        minted1[account] += tokenCount;
-        totalMinted += tokenCount;
-        for (uint256 i = 0; i < tokenCount; i++) {
-            uint256 tokenId = _tokenIdCounter.current();
-            _tokenIdCounter.increment();
-            _safeMint(account, tokenId);
-        }
+        FREE_MINT--;
+        minted1[account]++;
+        totalMinted++;
+        uint256 tokenId = _tokenIdCounter.current();
+        _tokenIdCounter.increment();
+        _safeMint(account, tokenId);
     }
 
     function whitelistMint(
