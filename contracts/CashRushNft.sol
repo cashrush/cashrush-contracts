@@ -84,7 +84,6 @@ contract CashRushNft is
     );
 
     error IndexOutOfBounds();
-    error URIQueryForNonexistentToken();
     error MintNotActive();
     error MintLimit();
     error NotAuthorized();
@@ -394,7 +393,7 @@ contract CashRushNft is
     function tokenURI(
         uint256 tokenId
     ) public view override returns (string memory) {
-        if (!_exists(tokenId)) revert URIQueryForNonexistentToken();
+        _requireMinted(tokenId);
 
         if (!_revealed) return _notRevealedURI;
 
