@@ -87,6 +87,7 @@ contract CashRushNft is
     error MintNotActive();
     error MintLimit();
     error NotAuthorized();
+    error IncorrectValue();
 
     constructor()
         public
@@ -284,7 +285,7 @@ contract CashRushNft is
             "MerkleDistributor: Invalid  merkle proof"
         );
         require((totalSupply() + tokenCount) <= MAX_SUPPLY, "MAX_SUPPLY");
-        require(msg.value == tokenCount * price2, "Incorrect value");
+        if (msg.value != tokenCount * price2) revert IncorrectValue();
         _sendEth(wallet, msg.value);
         minted2[account] += tokenCount;
         totalMinted += tokenCount;
@@ -298,7 +299,7 @@ contract CashRushNft is
     function publicMint(uint256 tokenCount) external payable nonReentrant {
         if (!isActivePublicMint) revert MintNotActive();
         require((totalSupply() + tokenCount) <= MAX_SUPPLY, "MAX_SUPPLY");
-        require(msg.value == tokenCount * price3, "Incorrect value");
+        if (msg.value != tokenCount * price3) revert IncorrectValue();
         _sendEth(wallet, msg.value);
         totalMinted += tokenCount;
         for (uint256 i = 0; i < tokenCount; i++) {
